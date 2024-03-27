@@ -1,0 +1,34 @@
+#MOVING AVERAGE FORECASTING
+#Import libs
+!pip install matplotlib
+import numpy as np
+import pandas as pd
+import matplotlib
+from matplotlib import pyplot as plt
+
+#Define function
+def moving_average(demand=[],forecast_period=[],average_period=[]):
+
+#Setup parameter
+  n1 = int(input("Input number of historical demand period: "))
+  for i in range(n1):
+      n2 = int(input())
+      demand.append(n2)
+  forecast_period = int(input("Input number of forecast period: "))
+  average_period = int(input("Input number of average period: "))
+
+# Append np.nan into the demand array to cover future periods
+  demand = np.append(demand,[np.nan]*forecast_period)
+# Define the forecast array
+  forecast = np.full(n1+forecast_period,np.nan)
+# Create all the t+1 forecast until end of historical period
+  for t in range(average_period,n1):
+    forecast[t] = np.mean(demand[t-average_period:t])
+# Forecast for all extra periods
+  forecast[t+1:] = np.mean(demand[t-average_period+1:t+1])
+# Return a DataFrame with the demand, forecast & error
+  df = pd.DataFrame.from_dict({'Demand':demand,'Forecast':forecast,'Error':demand-forecast})
+  df[['Demand','Forecast']].plot()
+  return df
+
+moving_average()
