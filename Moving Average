@@ -1,12 +1,10 @@
-#MOVING AVERAGE FORECASTING
 #Import libs
-!pip install matplotlib
 import numpy as np
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
 
-#Define function
+#MOVING AVERAGE FORECASTING
 def moving_average(demand=[],forecast_period=[],average_period=[]):
 
 #Setup parameter
@@ -17,7 +15,7 @@ def moving_average(demand=[],forecast_period=[],average_period=[]):
   forecast_period = int(input("Input number of forecast period: "))
   average_period = int(input("Input number of average period: "))
 
-# Append np.nan into the demand array to cover future periods
+# Append np.nan into the demand array to cover future period
   demand = np.append(demand,[np.nan]*forecast_period)
 # Define the forecast array
   forecast = np.full(n1+forecast_period,np.nan)
@@ -25,10 +23,35 @@ def moving_average(demand=[],forecast_period=[],average_period=[]):
   for t in range(average_period,n1):
     forecast[t] = np.mean(demand[t-average_period:t])
 # Forecast for all extra periods
-  forecast[t+1:] = np.mean(demand[t-average_period+1:t+1])
+    forecast[t+1:] = np.mean(demand[t-average_period+1:t+1])
 # Return a DataFrame with the demand, forecast & error
-  df = pd.DataFrame.from_dict({'Demand':demand,'Forecast':forecast,'Error':demand-forecast})
-  df[['Demand','Forecast']].plot()
+  error=demand-forecast
+  df = pd.DataFrame.from_dict({'Demand':demand,'Forecast':forecast,'Error':error})
+  df[['Demand','Forecast','Error']].plot()
   return df
 
-moving_average()
+def KPI(df):
+  #BIAS
+  avg_demand = df.loc[df['Error'].notnull(),'Demand'].mean()
+  avg_bias = df['Error'].mean()
+  scale_bias = avg_bias/avg_demand
+  print('Bias: {:0.2f}, {:.2%}'.format(avg_bias,scale_bias))
+
+  #MAPE
+  abs_error = df['Error'].abs()
+  abs_error_percentage = abs_error/df['Demand']
+  MAPE = abs_error_percentage.mean()
+  print('MAPE: {:.2%}'.format(MAPE))
+
+  #MAE
+  MAE = abs_error.mean()
+  MAE_percentage = MAE/avg_demand
+
+  print("MAE: {:.2f},{:.2%}".format(MAE,MAE_percentage))
+
+  #RMSE root mean square error
+  RMSE = np.sqrt((df["Error"]**2).mean())
+  RMSE_percentage = RMSE/avg_demand
+  print("RMSE: {:.2f},{:.2%}".format(RMSE,RMSE_percentage))
+
+KPI(moving_average())
